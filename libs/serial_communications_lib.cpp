@@ -4,6 +4,8 @@
  *  Created on: 11.10.2014
  *      Author: scheik
  */
+#include "../libs/serial_communications_lib.h"
+
 #include <iostream>
 #include <stdio.h>   /* Standard input/output definitions */
 #include <stdlib.h>  /* exit */
@@ -13,7 +15,6 @@
 #include <errno.h>   /* Error number definitions */
 #include <termios.h> /* POSIX terminal control definitions */
 #include <ctype.h>   /* isxxx() */
-#include "serial_communications_lib.h"
 
 using namespace std;
 

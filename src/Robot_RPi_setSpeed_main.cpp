@@ -14,111 +14,52 @@
 #include <errno.h>   								/* Error number definitions */
 #include <termios.h> 								/* POSIX terminal control definitions */
 #include <ctype.h>   								/* isxxx() */
-#include "serial_communications_lib.h"				// serial communications library
+#include "../libs/serial_communications_lib.h"		/* serial communications library*/
 
 using namespace std;
 
-void set_MD49_Commands (void);
-void print_help(void);
-void parse_input (void);
+void set_MD49_Speed (void);
 
 unsigned char set_Speed1=128;
 unsigned char set_Speed2=128;
-unsigned char set_Acceleration=5;
-unsigned char set_Mode=0;
-unsigned char set_Reset=0;
-unsigned char set_Regulator=1;
-unsigned char set_Timeout=0;
-unsigned char set_Encoder1Byte1=0;
-unsigned char set_Encoder1Byte2=0;
-unsigned char set_Encoder1Byte3=0;
-unsigned char set_Encoder1Byte4=0;
-unsigned char set_Encoder2Byte1=0;
-unsigned char set_Encoder2Byte2=0;
-unsigned char set_Encoder2Byte3=0;
-unsigned char set_Encoder2Byte4=0;
-char input;											// speichert eingegebene Kommandos
 
-int main(int argc, char **argv){
-   filedesc = openSerialPort("/dev/ttyAMA0", B38400);
-   if (filedesc == -1) exit(1);
-   usleep(40000);									// Sleep for UART to power up and set options
+int main(int argc, char *argv[]){
 
-   printf("MD49_Console started \n");
-   print_help();
-
-   while(1){
-		printf("Comand:");
-		scanf("%s",&input);
-		parse_input();
-		if (input==113){								// "q" = quit programm
-			close(fd);									// Close port
-			return 0;									// exit
-		}
-    }//end.mainloop
+	if(argc != 3) {														// Fehlerbehandlung: nicht alle Parameter angegeben
+	  printf("Programm needs both arguments <speed1> and <speed2>!\n");
+	  printf("Call with: %s <speed2> <speed2> \n", *argv);
+	  return EXIT_FAILURE;
+	}
+	// Fehlerbehandlung: Parameter haben unlogische Werte
+	// to code
+	filedesc = openSerialPort("/dev/ttyAMA0", B38400);					// open RPis serial port
+	if (filedesc == -1) exit(1);
+	usleep(80000);														// Sleep for UART to power up and set options
+	set_Speed1=strtol(argv[1], NULL, 10);								//convert string of argument1 to decimal
+	set_Speed2=strtol(argv[2], NULL, 10);
+	set_MD49_Speed();
+	close(fd);															// Close port
+	return 0;															// exit
 }//end.mainfunction
 
-void parse_input (void){
-	if (input==119){								// input="w" = Full Forward
-		set_Speed1=255;
-		set_Speed2=255;
-		set_MD49_Commands();
-	}
-	if (input==120){								// "x" = Stop
-		set_Speed1=128;
-		set_Speed2=128;
-		set_MD49_Commands();
-	}
-	if (input==97){									// "a" = Full Left
-		set_Speed1=0;
-		set_Speed2=255;
-		set_MD49_Commands();
-	}
-	if (input==100){								// "d" = Full Right
-		set_Speed1=255;
-		set_Speed2=0;
-		set_MD49_Commands();
-	}
-	if (input==115){								// "s" = Full Backward
-		set_Speed1=0;
-		set_Speed2=0;
-		set_MD49_Commands();
-	}
-	if (input==104){								// "h" = print help again
-		print_help();
-	}
-}
-
-void print_help(void){
-	printf("Console program to remote control robot hardware functions:\n");
-	printf("---------------------------------------------------------- \n");
-	printf("Enter 'w', 'a', 's', 'd'\n");
-	printf("to drive forward, left, right, backward full speed. \n");
-	printf("Enter 'x' to stop drives \n");
-	printf("---------------------------------------------------------- \n");
-	printf("Enter 'q' to quit program \n");
-	printf("Enter 'h' to show instructions again \n");
-	printf("---------------------------------------------------------- \n");
-}
-
-void set_MD49_Commands (void){
-	serialBuffer[0] = 84;							// 84=T Steuerbyte um alle Commands an MD49 zu senden
-	serialBuffer[1] = set_Speed1;					// speed1
-	serialBuffer[2] = set_Speed2;					// speed2
-	serialBuffer[3] = set_Acceleration;				// Acceleration
-	serialBuffer[4] = set_Mode;						// Mode
-	serialBuffer[5] = set_Reset;					// reset
-	serialBuffer[6] = set_Regulator;				// Regulator
-	serialBuffer[7] = set_Timeout;					// Timeout
-	serialBuffer[8] = set_Encoder1Byte1;
-	serialBuffer[9] = set_Encoder1Byte2;
-	serialBuffer[10] = set_Encoder1Byte3;
-	serialBuffer[11] = set_Encoder1Byte4;
-	serialBuffer[12] = set_Encoder2Byte1;
-	serialBuffer[13] = set_Encoder2Byte2;
-	serialBuffer[14] = set_Encoder2Byte3;
-	serialBuffer[15] = set_Encoder2Byte4;
-	writeBytes(fd, 16);
+void set_MD49_Speed (void){
+	serialBuffer[0] = 88;							// 88 =X Steuerbyte um alle Commands an MD49 zu senden
+	serialBuffer[1] = 115;							// 115=s Steuerbyte setSpeed
+	serialBuffer[2] = set_Speed1;					// speed1
+	serialBuffer[3] = set_Speed2;					// speed2
+	serialBuffer[4] = 0;							// all following bytes are
+	serialBuffer[5] = 0;							// dummy-bytes to
+	serialBuffer[6] = 0;							// fill message
+	serialBuffer[7] = 0;
+	serialBuffer[8] = 0;
+	serialBuffer[9] = 0;
+	serialBuffer[10] = 0;
+	serialBuffer[11] = 0;
+	serialBuffer[12] = 0;
+	serialBuffer[13] = 0;
+	serialBuffer[14] = 0;
+	serialBuffer[15] = 0;
+	writeBytes(fd, 16);								// write 16 Bytes from serialbuffer to UART
 }
 
 
