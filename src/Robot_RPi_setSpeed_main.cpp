@@ -38,7 +38,7 @@ int main(int argc, char *argv[]){
 	set_Speed1=strtol(argv[1], NULL, 10);								//convert string of argument1 to decimal
 	set_Speed2=strtol(argv[2], NULL, 10);
 	set_MD49_Speed();
-	close(fd);															// Close port
+	//close(fd);															// Close port
 	return 0;															// exit
 }//end.mainfunction
 
@@ -60,6 +60,12 @@ void set_MD49_Speed (void){
 	serialBuffer[14] = 0;
 	serialBuffer[15] = 0;
 	writeBytes(fd, 16);								// write 16 Bytes from serialbuffer to UART
+	usleep(50000);
+	writeBytes(fd, 16);
+	usleep(50000);
+	writeBytes(fd, 16);
+
+
 }
 
 
